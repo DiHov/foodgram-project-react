@@ -14,34 +14,21 @@ class Pagination(LimitOffsetPagination):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    pagination_class = Pagination
-    lookup_field = 'name'
     permission_classes = [AllowAny]
-    filter_backends = [filters.SearchFilter]
-    search_fields = [
-        'name',
-    ]
 
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    pagination_class = Pagination
-    lookup_field = 'name'
     permission_classes = [AllowAny]
-    filter_backends = [filters.SearchFilter]
-    search_fields = [
-        'name',
-    ]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipetSerializer
     pagination_class = Pagination
-    lookup_field = 'name'
     permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = [
-        'name',
+        'tag',
     ]

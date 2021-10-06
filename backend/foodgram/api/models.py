@@ -6,13 +6,13 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=100)
-    quantity = models.IntegerField
-    dimension = models.CharField(max_length=20)
+    quantity = models.PositiveIntegerField(default=0)
+    measurement_unit = models.CharField(max_length=20)
 
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
-    hex_code = models.CharField(max_length=20)
+    color = models.CharField(max_length=20)
     slug = models.SlugField()
 
 
@@ -20,11 +20,11 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='???',
+        related_name='Автор',
         verbose_name='Автор рецепта'
     )
     name = models.CharField(max_length=100)
-    image = models.ImageField()
+    #image = models.ImageField()
     description = models.TextField(
         verbose_name='Описание рецепта'
     )
