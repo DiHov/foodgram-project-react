@@ -28,6 +28,6 @@ class Recipe(models.Model):
     description = models.TextField(
         verbose_name='Описание рецепта'
     )
-    ingredients = models.ManyToManyField
-    tag = models.ManyToManyField
+    ingredients = models.ManyToManyField(Ingredient)
+    tag = models.ManyToManyField(Tag)
     cooking_time = models.PositiveIntegerField
