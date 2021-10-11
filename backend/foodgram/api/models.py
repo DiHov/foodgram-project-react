@@ -6,7 +6,7 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=100)
-    quantity = models.PositiveIntegerField(default=0)
+    amount = models.PositiveIntegerField(default=0)
     measurement_unit = models.CharField(max_length=20)
 
 
@@ -24,10 +24,10 @@ class Recipe(models.Model):
         verbose_name='Автор рецепта'
     )
     name = models.CharField(max_length=100)
-    #image = models.ImageField()
-    description = models.TextField(
+    # image = models.ImageField()
+    text = models.TextField(
         verbose_name='Описание рецепта'
     )
     ingredients = models.ManyToManyField(Ingredient)
-    tag = models.ManyToManyField(Tag)
-    cooking_time = models.PositiveIntegerField
+    tags = models.ManyToManyField(Tag)
+    cooking_time = models.PositiveIntegerField(default=0)
