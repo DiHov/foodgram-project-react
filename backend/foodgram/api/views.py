@@ -3,7 +3,9 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
 
 from .models import Ingredient, Recipe, Tag
-from .serializers import IngredientSerializer, RecipetSerializer, TagSerializer
+from .permissions import IsAuthor
+from .serializers import (IngredientSerializer,
+                          RecipetSerializer, TagSerializer)
 
 
 class Pagination(LimitOffsetPagination):
@@ -32,3 +34,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     search_fields = [
         'tag',
     ]
+
+    # def get_serializer_class(self):
+    #     if self.action in ("list", "retrieve"):
+    #         return RecipetSerializer
+    #     return RecipeCreateUpdateSerializer
+
+    # def get_permissions(self):
+    #     if self.action in ('list', 'retrieve'):
+    #         permission_classes = [AllowAny]
+    #     else:
+    #         permission_classes = [IsAuthor]
+    #     return [permission() for permission in permission_classes]
