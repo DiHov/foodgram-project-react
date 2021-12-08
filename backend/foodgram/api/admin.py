@@ -1,19 +1,24 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recipe, Tag
+from .models import Ingredient, IngredientAmount, Recipe, Tag
+
+
+class TagAdmin(admin.ModelAdmin):
+    readonly_fields = ('slug',)
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    model = Recipe.ingredients.through
+    model = IngredientAmount
     extra = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInline, )
+    search_fields = ['name', 'author__username', 'tags__name']
 
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_filter = ('name',)
+    search_fields = ['name']
 
 
 admin.site.register(Ingredient, IngredientAdmin)

@@ -52,7 +52,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=50,
+        max_length=100,
     )
     # # image = models.ImageField(
     # #     verbose_name='Фото рецепта',
@@ -66,10 +66,12 @@ class Recipe(models.Model):
         through='IngredientAmount',
         through_fields=('recipe', 'ingredient'),
         verbose_name='Ингредиенты',
-        )
+    )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Теги',)
+        verbose_name='Теги',
+        related_name='recipes',
+    )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
     )
@@ -80,6 +82,7 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
+        verbose_name = 'Рецепт'
 
     def __str__(self):
         return f'{self.name}, {self.author.username}'
@@ -89,15 +92,14 @@ class IngredientAmount(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        # related_name='ingredients',
+        related_name='amount_ingredients',
     )
     ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.CASCADE,
-        related_name='ingredients',
-        verbose_name='Ингредиент',
+        on_delete=models.PROTECT,
+        related_name='amount_ingredients',
     )
-    quantity = models.PositiveSmallIntegerField(
+    amount = models.PositiveSmallIntegerField(
         default=0,
         verbose_name='Количество',
     )
@@ -111,11 +113,13 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='follower',
+        verbose_name='подписчик',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
+        verbose_name='автор',
     )
 
     class Meta:
@@ -124,7 +128,7 @@ class Follow(models.Model):
             name='unique_follow')]
 
     def __str__(self):
-        return f'{self.author.username}:{self.user.username}'
+        return f'{self.author.get_username()}:{self.user.get_username()}'
 
 
 class Favorite(models.Model):

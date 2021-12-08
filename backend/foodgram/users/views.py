@@ -9,5 +9,3 @@ class Pagination(LimitOffsetPagination):
 
 class CustomUserViewSet(views.UserViewSet):
     pagination_class = Pagination
-#     lookup_field = settings.LOGIN_FIELD
-#     permission_classes = [AllowAny]
