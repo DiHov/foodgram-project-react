@@ -25,6 +25,11 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'amount', 'measurement_unit',)
 
 
+class IngredientAmountSerializerCreateUpdate(serializers.Serializer):
+    id = serializers.IntegerField(required=True)
+    amount = serializers.FloatField(required=True)
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -74,7 +79,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateUpdateSerializer(RecipeSerializer):
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = IngredientAmountSerializerCreateUpdate(many=True)
     tags = serializers.ListField(child=serializers.IntegerField())
 
     def create(self, validated_data):
