@@ -90,7 +90,7 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
             recipe = Recipe.objects.create(
                 author=self.context['request'].user,
                 name=validated_data['name'],
-                # image=validated_data['image'],
+                image=validated_data['image'],
                 text=validated_data['text'],
                 cooking_time=validated_data['cooking_time'],
             )
@@ -144,14 +144,14 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
 
 
 class RecipeForListSerializer(serializers.ModelSerializer):
-    # image = Base64ImageField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
         fields = (
             'id',
             'name',
-            # 'image',
+            'image',
             'cooking_time',
         )
 
