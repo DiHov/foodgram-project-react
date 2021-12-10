@@ -21,9 +21,11 @@ class Ingredient(models.Model):
                 name='unique_ingredient',
             )
         ]
+        verbose_name = 'Ингредиенты'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        return f'{self.name}, {self.measurement_unit}'
+        return f'{self.name}, {self.measurement_unit}'     
 
 
 class Tag(models.Model):
@@ -38,6 +40,10 @@ class Tag(models.Model):
     slug = models.CharField(
         max_length=20,
     )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
     def __str__(self):
         return self.name
@@ -55,8 +61,8 @@ class Recipe(models.Model):
         max_length=100,
     )
     image = models.ImageField(
-        upload_to=r"recipes/%Y/%m/%d/",
-        verbose_name="Изображение",
+        upload_to=r'recipes/%Y/%m/%d/',
+        verbose_name='Изображение',
         unique=False,
         blank=False,
         null=False,
@@ -86,6 +92,7 @@ class Recipe(models.Model):
     class Meta:
         ordering = ['-pub_date']
         verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return f'{self.name}, {self.author.username}'

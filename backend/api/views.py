@@ -4,6 +4,7 @@ from collections import OrderedDict
 from django.http.response import FileResponse
 from fpdf import FPDF
 from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import (GenericAPIView, ListAPIView,
                                      get_object_or_404)
 from rest_framework.pagination import LimitOffsetPagination
@@ -100,6 +101,67 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(retrieve_serializer.data)
 
+    def get_ingredients_list(self, recipes):
+        ingredients = {}
+        print(recipes)
+        for recipe in recipes:
+            for amount_ingredient in recipe.amount_ingredients.all():
+                name = f'{amount_ingredient.ingredient.name}'
+                amount = amount_ingredient.amount
+                measurement_unit = (
+                    amount_ingredient.ingredient.measurement_unit
+                )
+
+                ingredient = ingredients.get(name, None)
+                if ingredient:
+                    ingredient['amount'] += amount
+                else:
+                    ingredients[name] = {
+                        'amount': amount,
+                        'measurement_unit': measurement_unit,
+                    }
+
+        return OrderedDict(
+            sorted(ingredients.items(), key=lambda item: item[0])
+        )
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='download_shopping_cart',
+        url_name='download_shopping_cart',
+    )
+    def download_shopping_cart(self, request):
+        shopping_list = request.user.shopping_user.all()
+        recipes = []
+        for item in shopping_list:
+            recipes.append(item.recipe)
+        print(recipes)
+        ingredients_amounts = self.get_ingredients_list(recipes)
+        pdf = FPDF()
+        pdf.add_font(
+            "DejaVu", "", "./api/fonts/DejaVuSansCondensed.ttf", uni=True
+        )
+        pdf.set_font("DejaVu", "", 14)
+        pdf.add_page()
+        for ingredient_name, amount_measurement in ingredients_amounts.items():
+            text = (
+                f'{ingredient_name} {amount_measurement["amount"]}'
+                f' {amount_measurement["measurement_unit"]}'
+            )
+            pdf.cell(0, 10, txt=text, ln=1)
+
+        string_file = pdf.output(dest='S')
+        response = FileResponse(
+            io.BytesIO(string_file.encode('latin1')),
+            content_type='application/pdf',
+        )
+        response[
+            'Content-Disposition'
+        ] = 'attachment; filename="shopong-list.pdf"'
+
+        return response
+
 
 class Subscription(ListAPIView):
     serializer_class = FollowSerializer
@@ -161,53 +223,3 @@ class ShoppingListCreateDestroy(GenericAPIView):
         )
         unit.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ShoppingCart(GenericAPIView):
-
-    def get_ingredients_list(self, recipes):
-        ingredients = {}
-        for recipe in recipes:
-            for amount_ingredient in recipe.amounts_ingredients.all():
-                name = f'{amount_ingredient.ingredient.name}'
-                amount = amount_ingredient.amount
-                measurement_unit = (
-                    amount_ingredient.ingredient.measurement_unit
-                )
-
-                ingredient = ingredients.get(name, None)
-                if ingredient:
-                    ingredient['amount'] += amount
-                else:
-                    ingredients[name] = {
-                        'amount': amount,
-                        'measurement_unit': measurement_unit,
-                    }
-
-        return OrderedDict(
-            sorted(ingredients.items(), key=lambda item: item[0])
-        )
-
-    def download_shopping_cart(self, request):
-        recipes = request.user.shopping_list.all()
-        ingredients_amounts = self.get_ingredients_list(recipes)
-        pdf = FPDF()
-        pdf.set_font('Arial', 'B', 14)
-        pdf.add_page()
-        for ingredient_name, amount_measurement in ingredients_amounts.items():
-            text = (
-                f'{ingredient_name} {amount_measurement["amount"]}'
-                f' {amount_measurement["measurement_unit"]}'
-            )
-            pdf.cell(0, 10, txt=text, ln=1)
-
-        string_file = pdf.output(dest='S')
-        response = FileResponse(
-            io.BytesIO(string_file.encode('latin1')),
-            content_type='application/pdf',
-        )
-        response[
-            'Content-Disposition'
-        ] = 'attachment; filename="shopong-list.pdf"'
-
-        return response

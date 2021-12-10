@@ -15,8 +15,8 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
+      - static_value:/code/static/
+      - media_value:/code/media/
     depends_on:
       - db
     env_file:
@@ -26,7 +26,6 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    tty: true
     volumes:
       - ../frontend/:/app/result_build/
 
