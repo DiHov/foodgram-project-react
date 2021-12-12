@@ -7,7 +7,6 @@ from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import (GenericAPIView, ListAPIView,
                                      get_object_or_404)
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -18,11 +17,7 @@ from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
                           RecipeForListSerializer, RecipeSerializer,
                           TagSerializer)
-
-
-class Pagination(LimitOffsetPagination):
-    default_limit = 10
-    max_page_size = 100
+from .paginatons import Pagination
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -42,11 +37,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     pagination_class = Pagination
     permission_classes_by_action = {
-        "create": [IsAuthenticated],
-        "list": [AllowAny],
-        "retriev": [AllowAny],
-        "update": [IsAuthor],
-        "destroy": [IsAuthor],
+        'create': [IsAuthenticated],
+        'list': [AllowAny],
+        'retrieve': [AllowAny],
+        'update': [IsAuthor],
+        'destroy': [IsAuthor],
     }
     filter_backends = [filters.SearchFilter]
     search_fields = [
@@ -95,15 +90,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
         if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
         return Response(retrieve_serializer.data)
 
     def get_ingredients_list(self, recipes):
         ingredients = {}
-        print(recipes)
         for recipe in recipes:
             for amount_ingredient in recipe.amount_ingredients.all():
                 name = f'{amount_ingredient.ingredient.name}'
@@ -179,7 +171,7 @@ class SubscriptionCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         author = get_object_or_404(User, id=user_id)
 
-        Follow.objects.create(user=request.user, author=author)
+        Follow.objects.get_or_create(user=request.user, author=author)
         serializer = FollowSerializer(instance=author, **kwargs)
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
@@ -196,7 +188,7 @@ class FavoriteCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         recipe = get_object_or_404(Recipe, id=recipe_id)
 
-        Favorite.objects.create(user=request.user, recipe=recipe)
+        Favorite.objects.get_or_create(user=request.user, recipe=recipe)
         serializer = RecipeForListSerializer(instance=recipe, **kwargs)
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
@@ -213,7 +205,7 @@ class ShoppingListCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         recipe = get_object_or_404(Recipe, id=recipe_id)
 
-        ShoppingList.objects.create(user=request.user, recipe=recipe)
+        ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
         serializer = RecipeForListSerializer(instance=recipe, **kwargs)
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 

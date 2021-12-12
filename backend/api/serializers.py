@@ -2,9 +2,25 @@ from django.db import transaction
 from django.shortcuts import get_list_or_404, get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from users.serializers import CustomUserSerializer
 
+from users.serializers import CustomUserSerializer
 from .models import Ingredient, IngredientAmount, Recipe, Tag, User
+
+
+def ingredient_creaton(recipe, ingredients):
+    amounts_instance = []
+    for ingredient_data in ingredients:
+        amount = ingredient_data['amount']
+        amounts_instance.append(
+            IngredientAmount(
+                amount=amount,
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(
+                    pk=ingredient_data['id']
+                ),
+            )
+        )
+    return IngredientAmount.objects.bulk_create(amounts_instance)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -81,6 +97,40 @@ class RecipeSerializer(serializers.ModelSerializer):
 class RecipeCreateUpdateSerializer(RecipeSerializer):
     ingredients = IngredientAmountSerializerCreateUpdate(many=True)
     tags = serializers.ListField(child=serializers.IntegerField())
+    cooking_time = serializers.IntegerField()
+
+    def validate_ingredients(self, value):
+        unique = []
+        for item in value:
+            if item['id'] in unique:
+                raise serializers.ValidationError(
+                    'Ингредиенты не должны повторяться'
+                )
+            if item['amount'] < 0:
+                raise serializers.ValidationError(
+                    'Количество не может быть отрицательным'
+                )
+            else:
+                unique.append(item['id'])
+        return value
+
+    def validate_tags(self, value):
+        unique = []
+        for item in value:
+            if item in unique:
+                raise serializers.ValidationError(
+                    'Теги не должны повторяться'
+                )
+            else:
+                unique.append(item)
+        return value
+
+    def validate_cooking_time(self, value):
+        if value < 0:
+            raise serializers.ValidationError(
+                'Время готовки не может быть отрицательным'
+            )
+        return value
 
     def create(self, validated_data):
         with transaction.atomic():
@@ -94,21 +144,7 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
                 text=validated_data['text'],
                 cooking_time=validated_data['cooking_time'],
             )
-
-            amounts_instance = []
-            for ingredient_data in validated_data['ingredients']:
-                print(validated_data)
-                amount = ingredient_data['amount']
-                amounts_instance.append(
-                    IngredientAmount(
-                        amount=amount,
-                        recipe=recipe,
-                        ingredient=Ingredient.objects.get(
-                            pk=ingredient_data['id']
-                        ),
-                    )
-                )
-            IngredientAmount.objects.bulk_create(amounts_instance)
+            ingredient_creaton(recipe, ingredients=validated_data['ingredients'])
             recipe.tags.set(tags)
 
         return recipe
@@ -123,23 +159,9 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
             ingredients = validated_data.pop('ingredients', None)
             if ingredients:
                 recipe.amount_ingredients.all().delete()
-                new_amounts_intstance = []
-                for ingredient in ingredients:
-                    id, amount = ingredient.values()
-                    new_amounts_intstance.append(
-                        IngredientAmount(
-                            amount=amount,
-                            recipe=recipe,
-                            ingredient=get_object_or_404(
-                                Ingredient, pk=id
-                            ),
-                        )
-                    )
-                IngredientAmount.objects.bulk_create(new_amounts_intstance)
+                ingredient_creaton(recipe, ingredients)
 
-            for attribute, value in validated_data.items():
-                setattr(recipe, attribute, value)
-            recipe.save()
+            super().update(recipe, validated_data)
         return recipe
 
 

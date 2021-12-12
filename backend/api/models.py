@@ -25,7 +25,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        return f'{self.name}, {self.measurement_unit}'     
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Tag(models.Model):
@@ -39,6 +39,7 @@ class Tag(models.Model):
     )
     slug = models.CharField(
         max_length=20,
+        verbose_name='slug',
     )
 
     class Meta:
@@ -64,8 +65,6 @@ class Recipe(models.Model):
         upload_to=r'recipes/%Y/%m/%d/',
         verbose_name='Изображение',
         unique=False,
-        blank=False,
-        null=False,
     )
     text = models.TextField(
         verbose_name='Описание рецепта'
@@ -103,16 +102,22 @@ class IngredientAmount(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='amount_ingredients',
+        verbose_name='Необходимый рецепт',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.PROTECT,
         related_name='amount_ingredients',
+        verbose_name='Необходимый ингредиент',
     )
     amount = models.PositiveSmallIntegerField(
         default=0,
         verbose_name='Количество',
     )
+
+    class Meta:
+        verbose_name = 'Количество ингредиентов'
+        verbose_name_plural = 'Количество ингредиентов'
 
     def __str__(self):
         return self.ingredient.name
@@ -123,19 +128,21 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='follower',
-        verbose_name='подписчик',
+        verbose_name='Подписчик',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='автор',
+        verbose_name='Автор',
     )
 
     class Meta:
         constraints = [models.UniqueConstraint(
             fields=['user', 'author'],
             name='unique_follow')]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
 
     def __str__(self):
         return f'{self.author.get_username()}:{self.user.get_username()}'
@@ -146,6 +153,7 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='favorites_recipes',
+        verbose_name='Подписчик рецепта',
         blank=True,
         null=True,
     )
@@ -153,6 +161,7 @@ class Favorite(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='in_favorites',
+        verbose_name='Любимый рецепт',
         blank=True,
         null=True,
     )
@@ -161,6 +170,8 @@ class Favorite(models.Model):
         constraints = [models.UniqueConstraint(
             fields=['user', 'recipe'],
             name='unique_favorte')]
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
 
     def __str__(self):
         return f'{self.user.username}:{self.recipe.name}'
@@ -171,6 +182,7 @@ class ShoppingList(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='shopping_user',
+        verbose_name='Покупатель',
         blank=True,
         null=True,
     )
@@ -178,6 +190,7 @@ class ShoppingList(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopping_list',
+        verbose_name='Рецепт для покупок',
         blank=True,
         null=True,
     )
@@ -186,6 +199,8 @@ class ShoppingList(models.Model):
         constraints = [models.UniqueConstraint(
             fields=['user', 'recipe'],
             name='unique_shoppinglist')]
+        verbose_name = 'Корзина покупок'
+        verbose_name_plural = 'Корзина покупок'
 
     def __str__(self):
         return f'{self.user.username}:{self.recipe.name}'
