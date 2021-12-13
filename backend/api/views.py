@@ -1,6 +1,6 @@
 import io
-from collections import OrderedDict
 
+from django.db.models import Sum
 from django.http.response import FileResponse
 from fpdf import FPDF
 from rest_framework import filters, status, viewsets
@@ -12,12 +12,12 @@ from rest_framework.response import Response
 
 from .models import (Favorite, Follow, Ingredient, Recipe, ShoppingList, Tag,
                      User)
+from .paginatons import Pagination
 from .permissions import IsAuthor
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
                           RecipeForListSerializer, RecipeSerializer,
                           TagSerializer)
-from .paginatons import Pagination
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -33,7 +33,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all().order_by("-pub_date")
+    queryset = Recipe.objects.all().order_by('-pub_date')
     serializer_class = RecipeSerializer
     pagination_class = Pagination
     permission_classes_by_action = {
@@ -94,29 +94,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(retrieve_serializer.data)
 
-    def get_ingredients_list(self, recipes):
-        ingredients = {}
-        for recipe in recipes:
-            for amount_ingredient in recipe.amount_ingredients.all():
-                name = f'{amount_ingredient.ingredient.name}'
-                amount = amount_ingredient.amount
-                measurement_unit = (
-                    amount_ingredient.ingredient.measurement_unit
-                )
-
-                ingredient = ingredients.get(name, None)
-                if ingredient:
-                    ingredient['amount'] += amount
-                else:
-                    ingredients[name] = {
-                        'amount': amount,
-                        'measurement_unit': measurement_unit,
-                    }
-
-        return OrderedDict(
-            sorted(ingredients.items(), key=lambda item: item[0])
-        )
-
     @action(
         detail=False,
         methods=['get'],
@@ -124,23 +101,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name='download_shopping_cart',
     )
     def download_shopping_cart(self, request):
-        shopping_list = request.user.shopping_user.all()
-        recipes = []
-        for item in shopping_list:
-            recipes.append(item.recipe)
-        print(recipes)
-        ingredients_amounts = self.get_ingredients_list(recipes)
+        ingredients_amounts = Recipe.objects.filter(
+            shopping_list__user=request.user
+        ).order_by('ingredients__name').values(
+            'ingredients__name', 'ingredients__measurement_unit'
+        ).annotate(amount=Sum('amount_ingredients__amount'))
+
         pdf = FPDF()
         pdf.add_font(
             "DejaVu", "", "./api/fonts/DejaVuSansCondensed.ttf", uni=True
         )
         pdf.set_font("DejaVu", "", 14)
         pdf.add_page()
-        for ingredient_name, amount_measurement in ingredients_amounts.items():
-            text = (
-                f'{ingredient_name} {amount_measurement["amount"]}'
-                f' {amount_measurement["measurement_unit"]}'
+        for item in ingredients_amounts:
+            name, amount, measurement_unit = (
+                item['ingredients__name'], item['amount'], item[
+                    'ingredients__measurement_unit'
+                ]
             )
+            text = f'{name} ({measurement_unit}) - {amount}'
+
             pdf.cell(0, 10, txt=text, ln=1)
 
         string_file = pdf.output(dest='S')
@@ -171,16 +151,29 @@ class SubscriptionCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         author = get_object_or_404(User, id=user_id)
 
-        Follow.objects.get_or_create(user=request.user, author=author)
-        serializer = FollowSerializer(instance=author, **kwargs)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        if not Follow.objects.filter(
+            user=request.user,
+            author=author
+        ).exists():
+            Follow.objects.create(user=request.user, author=author)
+            serializer = FollowSerializer(instance=author, **kwargs)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        return Response('Уже в подписках', status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, user_id):
-        subscription = get_object_or_404(
-            Follow, user=request.user, author_id=user_id
-        )
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if Follow.objects.filter(
+            user=request.user,
+            author_id=user_id
+        ).exists():
+            Follow.objects.filter(
+                user=request.user,
+                author_id=user_id
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response('Уже удален из избранных', status.HTTP_400_BAD_REQUEST)
 
 
 class FavoriteCreateDestroy(GenericAPIView):
@@ -188,16 +181,29 @@ class FavoriteCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         recipe = get_object_or_404(Recipe, id=recipe_id)
 
-        Favorite.objects.get_or_create(user=request.user, recipe=recipe)
-        serializer = RecipeForListSerializer(instance=recipe, **kwargs)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        if not Favorite.objects.filter(
+            user=request.user,
+            recipe=recipe
+        ).exists():
+            Favorite.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipeForListSerializer(instance=recipe, **kwargs)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        return Response('Уже в избранных', status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, recipe_id):
-        favorite = get_object_or_404(
-            Favorite, user=request.user, recipe_id=recipe_id
-        )
-        favorite.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if Favorite.objects.filter(
+            user=request.user,
+            recipe_id=recipe_id
+        ).exists():
+            Favorite.objects.filter(
+                user=request.user,
+                recipe_id=recipe_id
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response('Уже удален из избранных', status.HTTP_400_BAD_REQUEST)
 
 
 class ShoppingListCreateDestroy(GenericAPIView):
@@ -205,13 +211,29 @@ class ShoppingListCreateDestroy(GenericAPIView):
         kwargs = {'context': self.get_serializer_context()}
         recipe = get_object_or_404(Recipe, id=recipe_id)
 
-        ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
-        serializer = RecipeForListSerializer(instance=recipe, **kwargs)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        if not ShoppingList.objects.filter(
+            user=request.user,
+            recipe=recipe
+        ).exists():
+            ShoppingList.objects.create(
+                user=request.user,
+                recipe=recipe
+            )
+            serializer = RecipeForListSerializer(instance=recipe, **kwargs)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        return Response('Уже в корзине', status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, recipe_id):
-        unit = get_object_or_404(
-            ShoppingList, user=request.user, recipe_id=recipe_id
-        )
-        unit.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if ShoppingList.objects.filter(
+            user=request.user,
+            recipe_id=recipe_id
+        ).exists():
+            ShoppingList.objects.filter(
+                user=request.user,
+                recipe_id=recipe_id
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response('Уже удален из корзины', status.HTTP_400_BAD_REQUEST)

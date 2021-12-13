@@ -6,8 +6,7 @@ environ.Env.read_env()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# SECRET_KEY = os.getenv('SECRET_KEY')
-SECRET_KEY = '(0#r1*bqxa%9t2uy#+ht)&m0p)bn(qp$)sn844ixiwj%4zc$vx'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
@@ -63,14 +62,12 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        # 'NAME': os.getenv('DB_NAME'),
-        # 'USER': os.getenv('POSTGRES_USER'),
-        # 'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        # 'HOST': os.getenv('DB_HOST'),
-        # 'PORT': os.getenv('DB_PORT')
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
 

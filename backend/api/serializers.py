@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_list_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
@@ -144,7 +144,10 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
                 text=validated_data['text'],
                 cooking_time=validated_data['cooking_time'],
             )
-            ingredient_creaton(recipe, ingredients=validated_data['ingredients'])
+            ingredient_creaton(
+                recipe,
+                ingredients=validated_data['ingredients']
+            )
             recipe.tags.set(tags)
 
         return recipe
