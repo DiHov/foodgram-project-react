@@ -140,10 +140,9 @@ class Subscription(ListAPIView):
     pagination_class = Pagination
 
     def get_queryset(self):
-        followings = User.objects.filter(
+        return User.objects.filter(
             following__user=self.request.user
         ).all()
-        return followings
 
 
 class SubscriptionCreateDestroy(GenericAPIView):

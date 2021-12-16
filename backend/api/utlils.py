@@ -1,5 +1,4 @@
-
-from .models import IngredientAmount, Ingredient
+from .models import Ingredient, IngredientAmount
 
 
 def ingredient_creaton(recipe, ingredients):
