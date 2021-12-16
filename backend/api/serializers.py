@@ -5,22 +5,7 @@ from rest_framework import serializers
 
 from users.serializers import CustomUserSerializer
 from .models import Ingredient, IngredientAmount, Recipe, Tag, User
-
-
-def ingredient_creaton(recipe, ingredients):
-    amounts_instance = []
-    for ingredient_data in ingredients:
-        amount = ingredient_data['amount']
-        amounts_instance.append(
-            IngredientAmount(
-                amount=amount,
-                recipe=recipe,
-                ingredient=Ingredient.objects.get(
-                    pk=ingredient_data['id']
-                ),
-            )
-        )
-    return IngredientAmount.objects.bulk_create(amounts_instance)
+from .utlils import ingredient_creaton
 
 
 class IngredientSerializer(serializers.ModelSerializer):

@@ -38,7 +38,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'foodgram.urls'
 
-AUTH_USER_MODEL = "users.CustomUser"
+AUTH_USER_MODEL = 'users.CustomUser'
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 
