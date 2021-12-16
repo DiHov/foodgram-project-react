@@ -8,9 +8,7 @@ services:
       - ./.env
 
   web:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: dihov/foodgram:v1
     restart: always
     ports:
       - 8000:8000
@@ -23,9 +21,7 @@ services:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: dihov/foodgram-frontend:v1
     volumes:
       - ../frontend/:/app/result_build/
 
