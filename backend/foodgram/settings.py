@@ -73,6 +73,9 @@ DATABASES = {
     }
 }
 
+ALLOWED_HOSTS = [
+    'http://62.84.114.225/',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
