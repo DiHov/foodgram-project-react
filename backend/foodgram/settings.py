@@ -7,12 +7,14 @@ environ.Env.read_env()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    '62.84.114.225',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -74,9 +76,6 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = [
-    '62.84.114.225',
-]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,9 +110,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 REST_FRAMEWORK = {
-    # "DEFAULT_FILTER_BACKENDS": (
-    #     "django_filters.rest_framework.DjangoFilterBackend"
-    # ),
+    "DEFAULT_FILTER_BACKENDS": (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),

@@ -7,7 +7,7 @@ User = get_user_model()
 
 
 class RecipeFilter(django_filters.FilterSet):
-    # author = django_filters.NumberFilter(queryset=User.objects.all())
+    author = django_filters.NumberFilter()
     tags = django_filters.AllValuesMultipleFilter(field_name='tags__slug')
     is_favorited = django_filters.BooleanFilter(method='get_is_favorited')
     is_in_shopping_cart = django_filters.BooleanFilter(
@@ -16,7 +16,7 @@ class RecipeFilter(django_filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
+        fields = ('author', 'tags')
 
     def get_is_favorited(self, queryset, name, value):
         if value:
