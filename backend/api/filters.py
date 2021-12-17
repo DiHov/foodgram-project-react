@@ -1,18 +1,20 @@
 import django_filters
 
-from .models import Ingredient, Recipe
+from .models import Favorite, Ingredient, Recipe, ShoppingList
 
 
 class RecipeFilter(django_filters.FilterSet):
     author = django_filters.NumberFilter()
     tags = django_filters.AllValuesMultipleFilter(field_name='tags__slug')
     is_favorited = django_filters.BooleanFilter(
-        field_name='in_favorites',
-        lookup_expr='True'
+        widget=django_filters.BooleanWidget(
+            Favorite.objects.all()
+        )
     )
     is_in_shopping_cart = django_filters.BooleanFilter(
-        field_name='shopping_list',
-        lookup_expr='True'
+        widget=django_filters.BooleanWidget(
+            ShoppingList.objects.all()
+        )
     )
 
     class Meta:
