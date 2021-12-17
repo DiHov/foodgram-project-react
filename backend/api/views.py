@@ -3,7 +3,7 @@ import io
 from django.db.models import Sum
 from django.http.response import FileResponse
 from fpdf import FPDF
-from rest_framework import filters, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import (GenericAPIView, ListAPIView,
                                      get_object_or_404)
@@ -18,12 +18,14 @@ from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
                           RecipeForListSerializer, RecipeSerializer,
                           TagSerializer)
+from .filters import IngredientFilter, RecipeFilter
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
+    filter_class = IngredientFilter
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -43,10 +45,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         'update': [IsAuthor],
         'destroy': [IsAuthor],
     }
-    filter_backends = [filters.SearchFilter]
-    search_fields = [
-        'tag',
-    ]
+    filter_lass = RecipeFilter
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PUT'):
