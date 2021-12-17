@@ -10,6 +10,7 @@ from rest_framework.generics import (GenericAPIView, ListAPIView,
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Follow, Ingredient, Recipe, ShoppingList, Tag,
                      User)
 from .paginatons import Pagination
@@ -18,7 +19,6 @@ from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
                           RecipeForListSerializer, RecipeSerializer,
                           TagSerializer)
-from .filters import IngredientFilter, RecipeFilter
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
