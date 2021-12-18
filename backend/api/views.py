@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Follow, Ingredient, Recipe, ShoppingList, Tag,
                      User)
-from .paginatons import Pagination
+from .paginations import Pagination
 from .permissions import IsAuthor
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
