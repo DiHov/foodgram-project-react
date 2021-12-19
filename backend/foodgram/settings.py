@@ -129,7 +129,7 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['rest_framework.permissions.IsAuthenticated']
+        'user': ['rest_framework.permissions.AllowAny']
     },
     'HIDE_USERS': False,
     "SERIALIZERS": {
