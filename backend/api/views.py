@@ -48,7 +48,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method in ('POST', 'PUT', 'PATCH'):
+        if self.request.method in ('POST', 'PUT'):
             return RecipeCreateUpdateSerializer
         else:
             return RecipeSerializer
@@ -71,9 +71,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             headers=headers,
         )
 
-    # def partial_update(self, request, *args, **kwargs):
-    #     kwargs['partial'] = True
-    #     return self.update(request, *args, **kwargs)
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
