@@ -152,7 +152,7 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
 
             ingredients = validated_data.pop('ingredients', None)
             if ingredients:
-                recipe.ingredients.all().delete()
+                recipe.amount_ingredients.all().delete()
                 ingredient_creaton(recipe, ingredients)
 
             super().update(recipe, validated_data)
