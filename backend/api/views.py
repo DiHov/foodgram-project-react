@@ -42,16 +42,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         'create': [IsAuthenticated],
         'list': [AllowAny],
         'retrieve': [AllowAny],
+        'partial_update': [IsAuthor],
         'update': [IsAuthor],
         'destroy': [IsAuthor],
     }
     filter_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method in ('POST', 'PUT'):
+        if self.request.method in ('POST', 'PUT', 'PATCH'):
             return RecipeCreateUpdateSerializer
         else:
             return RecipeSerializer
+
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         kwargs.setdefault('context', self.get_serializer_context())
