@@ -204,7 +204,7 @@ class FollowSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if str(request.user) != 'AnonymousUser':
             return author.following.filter(
-                user=request.user.pk
+                user_id=request.user.pk
             ).exists()
         return False
         # request = self.context.get('request')
