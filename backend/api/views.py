@@ -75,10 +75,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             headers=headers,
         )
 
-    def partial_update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
-        return self.update(request, *args, **kwargs)
-
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         kwargs.setdefault('context', self.get_serializer_context())
@@ -90,6 +86,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             data=request.data,
             partial=partial,
         )
+        self.perform_update(update_serializer) #попробуем
         update_serializer.is_valid(raise_exception=True)
         instance = update_serializer.save(author=self.request.user)
         retrieve_serializer = RecipeSerializer(
@@ -100,6 +97,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(retrieve_serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
     @action(
         detail=False,
