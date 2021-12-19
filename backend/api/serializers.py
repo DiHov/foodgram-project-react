@@ -84,16 +84,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             ).exists()
         return False
 
-    # def get_is_favorited(self, current_recipe):
-    #     user = self.context['request'].user
-    #     return current_recipe.in_favorites.filter(
-    #         user_id=user.pk
-    #     ).exists()
-
-    # def get_is_in_shopping_cart(self, current_recipe):
-    #     user = self.context['request'].user
-    #     return current_recipe.shopping_list.filter(user_id=user.pk).exists()
-
 
 class RecipeCreateUpdateSerializer(RecipeSerializer):
     ingredients = IngredientAmountSerializerCreateUpdate(many=True)
@@ -162,7 +152,7 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
 
             ingredients = validated_data.pop('ingredients', None)
             if ingredients:
-                recipe.amount_ingredients.all().delete()
+                recipe.ingredients.all().delete()
                 ingredient_creaton(recipe, ingredients)
 
             super().update(recipe, validated_data)
@@ -207,12 +197,6 @@ class FollowSerializer(serializers.ModelSerializer):
                 user_id=request.user.pk
             ).exists()
         return False
-        # request = self.context.get('request')
-        # if request:
-        #     requested_user = request.user
-        # return author.following.filter(
-        #     user=requested_user
-        # ).exists()
 
     def get_recipes_count(self, author):
         return author.recipes.count()
