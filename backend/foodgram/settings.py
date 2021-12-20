@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -129,9 +129,9 @@ DJOSER = {
         'user': ['rest_framework.permissions.AllowAny']
     },
     'HIDE_USERS': False,
-    "SERIALIZERS": {
-        "user": "users.serializers.CustomUserSerializer",
-        "current_user": "users.serializers.CustomUserSerializer",
+    'SERIALIZERS': {
+        'user': 'users.serializers.CustomUserSerializer',
+        'current_user': 'users.serializers.CustomUserSerializer',
     },
 
 }
