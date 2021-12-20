@@ -132,7 +132,6 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
         with transaction.atomic():
             tags_ids = validated_data['tags']
             tags = get_list_or_404(Tag, pk__in=tags_ids)
-            print(validated_data['ingredients'])
             recipe = Recipe.objects.create(
                 author=self.context['request'].user,
                 name=validated_data['name'],
@@ -158,11 +157,8 @@ class RecipeCreateUpdateSerializer(RecipeSerializer):
             ingredients = validated_data.pop('ingredients', None)
             if ingredients:
                 recipe.amount_ingredients.all().delete()
-                
-                print(ingredients)
                 ingredient_creaton(recipe, ingredients)
-            print(validated_data)
-            print(recipe)
+
             super().update(recipe, validated_data)
         return recipe
 
